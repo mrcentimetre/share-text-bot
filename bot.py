@@ -17,7 +17,61 @@ token = "bot token"
 
 app = Client(":memory:", api_id, api_hash, bot_token=token)
 
+##Start Message & Buttons
+@bot.on_message(filters.command("start") & filters.private)
+async def welcomemsg(bot, msg):
+    await msg.reply(f"Welcome {msg.from_user.mention}, I'm Share Text Bot \n\nJust Forward me any message and I will create a share link for it.\n\nEnjoy! 😉",
+        reply_markup=InlineKeyboardMarkup(
+            [
+                [
+                    InlineKeyboardButton("🆘 Help",  callback_data="help"),
+                    InlineKeyboardButton("💚 Credits",  callback_data=b"Credits")
+                ],
+                [
+                    InlineKeyboardButton("📣 Channel",  url="https://t.me/TDICProjects"),
+                    InlineKeyboardButton("👥 Group",  url="https://t.me/TDICSupport"),
+                ]
+            ]
+        )
+    )
 
+#Back Button
+@bot.on_callback_query(filters.regex(r"^back"))
+async def backtostart(bot, query: CallbackQuery):
+	await query.message.delete(revoke=True)
+	await msg.reply(f"Welcome {msg.from_user.mention}, I'm Share Text Bot \n\nJust Forward me any message and I will create a share link for it.\n\nEnjoy! 😉",
+        reply_markup=InlineKeyboardMarkup(
+            [
+                [
+                    InlineKeyboardButton("🆘 Help",  callback_data="help"),
+                    InlineKeyboardButton("💚 Credits",  callback_data=b"Credits")
+                ],
+                [
+                    InlineKeyboardButton("📣 Channel",  url="https://t.me/TDICProjects"),
+                    InlineKeyboardButton("👥 Group",  url="https://t.me/TDICSupport"),
+                ]
+            ]
+        )
+    )
+    
+#Setup Help Message with buttons    
+@bot.on_callback_query(filters.regex(r"^help"))
+async def helpbutton(bot: Client, query: CallbackQuery):
+	await query.message.delete(revoke=True)
+	await query.message.reply_sticker("CAACAgUAAxkBAAEJZtZgSPs_fV8OmqAu3fBsbfc9WwJdBgACtAEAAuvwSVYLyVS6tQ2Yyh4E",
+    reply_markup=InlineKeyboardMarkup(
+        [
+            [InlineKeyboardButton("🔙 Back", callback_data="back")],
+        ]
+    )
+)
+
+#Popup Credits    
+@bot.on_callback_query(filters.regex(r"^Credits"))
+async def credits(bot: Client, query: CallbackQuery):
+    await query.answer("Developer 🧑‍💻\n\n • @itayki", show_alert=True)
+
+#Share Command in groups
 @app.on_message(filters.group & filters.text & filters.command("share"))
 async def groupmsg(client: app, message: Message):
     reply = message.reply_to_message
@@ -41,7 +95,7 @@ async def groupmsg(client: app, message: Message):
 async def delerrmsg(client: app, cquery: CallbackQuery):
     await cquery.message.delete()
 
-
+#Private Message
 @app.on_message(filters.private)
 async def privatensg(client: app, message: Message):
     await message.reply_text(share_link(message.text))
